@@ -15,42 +15,27 @@ int main(int argc, char ** argv)
   char pathLastIP[1024];
   char pathContacts[1024];
 
-  if(argc == 2)
+  //Construct last IP Path from Defaults
+  in = popen(PATH_LAST_IP, "r");
+  if(in == NULL)
   {
-    //Construct last IP Path from Arguments
-    size_t len = strlen(argv[1]);
-    if(len > 1024)
-    {
-      printf("Argment path length is larger than %d - %lu", 1024, len);
-      return 1;
-    }
-
-    strcpy(pathLastIP, argv[1]);
+    printf("Unable to read default path %s\n", PATH_LAST_IP);
+    return 1;
   }
-  else
+  fscanf(in, "%s", pathLastIP);
+  pclose(in);
+  in = NULL;
+
+  //Construct contacts path from Defaults
+  in = popen(PATH_CONTACT_LIST, "r");
+  if(in == NULL)
   {
-    //Construct last IP Path from Defaults
-    in = popen(PATH_LAST_IP, "r");
-    if(in == NULL)
-    {
-      printf("Unable to read default path %s\n", PATH_LAST_IP);
-      return 1;
-    }
-    fscanf(in, "%s", pathLastIP);
-    pclose(in);
-    in = NULL;
-
-    //Construct contacts path from Defaults
-    in = popen(PATH_CONTACT_LIST, "r");
-    if(in == NULL)
-    {
-      printf("Unable to read default path %s\n", PATH_CONTACT_LIST);
-      return 1;
-    }
-    fscanf(in, "%s", pathContacts);
-    pclose(in);
-    in = NULL;
+    printf("Unable to read default path %s\n", PATH_CONTACT_LIST);
+    return 1;
   }
+  fscanf(in, "%s", pathContacts);
+  pclose(in);
+  in = NULL;
 
   //Query and read in public IP Address
   in = popen("curl -s https://api.ipify.org | cat", "r");
@@ -89,7 +74,7 @@ int main(int argc, char ** argv)
   // printf("Current IP: %s\n", ipPublic);
   if(strcmp(ipLast, ipPublic) == 0)
   {
-    printf("Current public IP is the same as before (%s), doing nothing...\n", ipLast);
+    printf("Current Public IP hasn't changed (%s). Stopping.\n", ipLast);
     return 0;
   }
   else
