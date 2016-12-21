@@ -6,36 +6,47 @@
 #include <fstream>
 using namespace std;
 
-#define PATH_LAST_IP "ls $HOME/.ip-check/.lastip"
-#define PATH_CONTACT_LIST "ls $HOME/.ip-check/.contacts"
+#define PATH_DEFAULT "echo $HOME/.ip-check"
+#define FILE_LAST_IP ".lastip"
+#define FILE_CONTACT_LIST ".contacts"
 
 int main(int argc, char ** argv)
 {
   FILE * in = NULL;
+  char pathDefault[1024];
   char pathLastIP[1024];
   char pathContacts[1024];
 
-  //Construct last IP Path from Defaults
-  in = popen(PATH_LAST_IP, "r");
+  //Construct Program hidden directory
+  in = popen(PATH_DEFAULT, "r");
   if(in == NULL)
   {
-    printf("Unable to read default path %s\n", PATH_LAST_IP);
+    printf("Unable to read default path %s\n", PATH_DEFAULT);
     return 1;
   }
-  fscanf(in, "%s", pathLastIP);
+  fscanf(in, "%s", pathDefault);
   pclose(in);
   in = NULL;
 
-  //Construct contacts path from Defaults
-  in = popen(PATH_CONTACT_LIST, "r");
-  if(in == NULL)
-  {
-    printf("Unable to read default path %s\n", PATH_CONTACT_LIST);
-    return 1;
-  }
-  fscanf(in, "%s", pathContacts);
-  pclose(in);
-  in = NULL;
+  //Create Hidden Directory
+  char t_cmd[1024];
+  sprintf(t_cmd, "mkdir -p %s", pathDefault);
+  system(t_cmd);
+  printf("%s\n", t_cmd);
+
+  //Create last ip file
+  sprintf(pathLastIP, "%s/%s", pathDefault, FILE_LAST_IP);
+  memset(t_cmd, '\0', 1024);
+  strcat(t_cmd, "touch ");
+  strcat(t_cmd, pathLastIP);
+  system(t_cmd);
+
+  //Create contacts list
+  sprintf(pathContacts, "%s/%s", pathDefault, FILE_CONTACT_LIST);
+  memset(t_cmd, '\0', 1024);
+  strcat(t_cmd, "touch ");
+  strcat(t_cmd, pathContacts);
+  system(t_cmd);
 
   //Query and read in public IP Address
   in = popen("curl -s https://api.ipify.org | cat", "r");
@@ -74,7 +85,7 @@ int main(int argc, char ** argv)
   // printf("Current IP: %s\n", ipPublic);
   if(strcmp(ipLast, ipPublic) == 0)
   {
-    printf("Current Public IP hasn't changed (%s). Stopping.\n", ipLast);
+    printf("Current Public IP hasn't changed (%s).\n", ipLast);
     return 0;
   }
   else
@@ -96,15 +107,20 @@ int main(int argc, char ** argv)
       return 4;
     }
     string name = "", number = "";
+    int count = 0;
     while(inFile >> name >> number)
-    {
+    {      
       //Create Command
       char cmd[1024];
       sprintf(cmd, "curl -X POST http://textbelt.com/text -d number=%s -d \"message=%s\"", number.c_str(), msg);
 
       //Execute Command
       system(cmd);
+
+      count++;
     }
     inFile.close();
+
+    cout << "Attempted to notify " << count << " people!" << endl;
   }
 }
