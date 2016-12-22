@@ -12,6 +12,35 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
+  if(argc == 3 || argc == 4)
+  {
+    char * arg_cmd  = argv[1];
+    char * arg_name = argv[2];
+
+    if(strcmp(arg_cmd, "-a") == 0)
+    {
+      char * arg_number = argv[3];
+    }
+    else if(strcmp(arg_cmd, "-d") == 0)
+    {
+
+    }
+    else
+    {
+
+    }
+  }
+  else if(argc == 1)
+  {
+    ; //Do nothing with no argmuments
+  }
+  else
+  {
+    cout << "ip-check -a [NAME] [NUMBER]" << endl;
+    cout << "ip-check -d [NAME] " << endl;
+    return 0;
+  }
+
   FILE * in = NULL;
   char pathDefault[1024];
   char pathLastIP[1024];
