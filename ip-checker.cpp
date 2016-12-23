@@ -153,3 +153,39 @@ int main(int argc, char ** argv)
     cout << "Attempted to notify " << count << " people!" << endl;
   }
 }
+
+void load(string path)
+{
+	contacts.clear();
+
+	ifstream inFile(path.c_str());
+	if(!inFile)
+	{
+		cout << "Unable to load contacts at " << path << endl;
+		exit(1);
+	}
+
+	string name = "";
+	string number = "";
+	while(inFile >> name >> number)
+	{
+		Contact c = Contact(name, number);
+		contacts.push_back(c);
+	}
+	inFile.close();
+
+	cout << "Loaded " << contacts.size() << " Contacts" << endl;
+}
+
+void save(string path)
+{
+	ofstream outFile(path.c_str());
+
+	for(vector<Contact>::iterator it = contacts.begin(); it != contacts.end(); it++)
+	{
+		Contact c = *it;
+		outFile << c.toString() << endl;
+	}
+	outFile.close();
+}
+
