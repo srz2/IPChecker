@@ -4,42 +4,85 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 using namespace std;
 
 #define PATH_DEFAULT "echo $HOME/.ip-check"
 #define FILE_LAST_IP ".lastip"
 #define FILE_CONTACT_LIST ".contacts"
 
+class Contact
+{
+private:
+	string name;
+	string number;
+public:
+	Contact(string name, string number)
+	{
+		for(int c = 0;  c < name.length(); c++)
+		{
+			name[c] = tolower(name[c]);
+		}
+		name[0] = toupper(name[0]);
+
+		this->name = name;
+		this->number = number;
+	}
+
+	string getName()
+	{
+		return this->name;
+	}
+
+	string getNumber()
+	{
+		return this->number;
+	}
+
+	string toString()
+	{
+		return this->getName() + " " + this->getNumber(); 
+	}
+
+	bool operator ==(Contact & right)
+	{
+		if(this->name == right.getName())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	bool operator ==(const string & right)
+	{
+		if(this->name == right)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+};
+
+vector<Contact> contacts;
+
+void load(string path);
+void save(string path);
+
 int main(int argc, char ** argv)
 {
-  if(argc == 3 || argc == 4)
-  {
-    char * arg_cmd  = argv[1];
-    char * arg_name = argv[2];
-
-    if(strcmp(arg_cmd, "-a") == 0)
-    {
-      char * arg_number = argv[3];
-    }
-    else if(strcmp(arg_cmd, "-d") == 0)
-    {
-
-    }
-    else
-    {
-
-    }
-  }
-  else if(argc == 1)
-  {
-    ; //Do nothing with no argmuments
-  }
-  else
-  {
-    cout << "ip-check -a [NAME] [NUMBER]" << endl;
-    cout << "ip-check -d [NAME] " << endl;
-    return 0;
-  }
+	if(argc == 1)
+	{
+		cout << "Run Program:    ip-check -r" << endl;
+		cout << "Add Contact:    ip-check -a [NAME] [NUMBER]" << endl;
+		cout << "Delete Contact: ip-check -d [NAME] " << endl;
+		return 0;
+	}
 
   FILE * in = NULL;
   char pathDefault[1024];
@@ -83,6 +126,95 @@ int main(int argc, char ** argv)
   {
     printf("Unable to read api command results\n");
     return 2;
+  }
+
+//Load Contacts
+load(pathContacts);
+
+//Evaluate program arguments
+  if(argc >= 2 && argc <= 4)
+  {
+    char * arg_cmd  = argv[1];
+    char * arg_name = argv[2];
+
+    if(strcmp(arg_cmd, "-a") == 0)
+    {
+      char * arg_number = argv[3];
+
+	//Check if contact is in list
+	int index = -1;
+	bool exists = false;
+	for(vector<Contact>::iterator it = contacts.begin(); it != contacts.end(); it++)
+	{
+		index++;
+		Contact c = *it;
+		if(c == arg_name)
+		{
+			exists = true;
+			break;
+		}
+	}
+
+	//If it exists, add to contact list and save
+	if(!exists)
+	{
+		Contact c = Contact(arg_name, arg_number);
+		contacts.push_back(c);
+		save(pathContacts);
+		cout << "Added " << c.toString() << endl;	
+	}
+	else
+	{
+		Contact c = contacts[index];
+		cout << c.toString() << " already in contact list" << endl;
+	}
+	return 0;
+    }
+    else if(strcmp(arg_cmd, "-d") == 0)
+    {
+	//Check if contact is in list
+	int index = -1;
+	bool exists = false;
+	for(vector<Contact>::iterator it = contacts.begin(); it != contacts.end(); it++)
+	{
+		index++;
+		Contact c = *it;
+		if(c == arg_name)
+		{
+			exists = true;
+			break;
+		}
+	}
+
+	if(exists)
+	{
+		Contact c = contacts[index];
+		contacts[index] = contacts[contacts.size() - 1];
+		contacts[contacts.size() - 1] = c;
+		contacts.pop_back();
+		cout << "Deleted " << c.toString() << endl;
+		save(pathContacts);
+		return 0;
+	}
+	else
+	{
+		cout << arg_name << " Doesn't Exist!" << endl;
+	}
+	
+	return 0;
+    }
+   else if(strcmp(arg_cmd, "-r") == 0)
+    {
+
+    }
+    else
+    {
+	cout << "Unknown argment " << arg_cmd << endl;
+    }
+  }
+  else
+  {
+	cout << "[WARN]: Shouldn't get here..." << endl;
   }
 
   char ipPublic[32];
