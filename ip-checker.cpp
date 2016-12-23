@@ -203,6 +203,15 @@ load(pathContacts);
 	
 	return 0;
     }
+   else if(strcmp(arg_cmd, "-l") == 0)
+    {
+	for(vector<Contact>::iterator it = contacts.begin(); it != contacts.end(); it++)
+	{
+		Contact c = *it;
+		cout << c.toString() << endl;
+	}
+	return 0;	
+    }
    else if(strcmp(arg_cmd, "-r") == 0)
     {
 
