@@ -79,6 +79,7 @@ int main(int argc, char ** argv)
 	if(argc == 1)
 	{
 		cout << "Run Program:    ip-check -r" << endl;
+		cout << "List Contacts:  ip-check -l" << endl;
 		cout << "Add Contact:    ip-check -a [NAME] [NUMBER]" << endl;
 		cout << "Delete Contact: ip-check -d [NAME] " << endl;
 		return 0;
