@@ -83,6 +83,7 @@ int main(int argc, char ** argv)
 		cout << "List Contacts:  ip-check -l" << endl;
 		cout << "Add Contact:    ip-check -a [NAME] [NUMBER]" << endl;
 		cout << "Delete Contact: ip-check -d [NAME] " << endl;
+		cout << "Force Run:      ip-check -f" << endl;
 		return 0;
 	}
 
@@ -91,6 +92,8 @@ int main(int argc, char ** argv)
   char pathLastIP[1024];
   char pathContacts[1024];
   char pathLastRun[1024];
+
+  bool forceRun = false;
 
   //Construct Program hidden directory
   in = popen(PATH_DEFAULT, "r");
@@ -218,6 +221,11 @@ load(pathContacts);
 	}
 	return 0;	
     }
+   else if(strcmp(arg_cmd, "-f") == 0)
+   {
+	forceRun = true;
+	cout << "Will force run" << endl;
+   }
    else if(strcmp(arg_cmd, "-r") == 0)
     {
 
@@ -264,7 +272,7 @@ load(pathContacts);
 
   // printf("Last IP:    %s\n", ipLast);
   // printf("Current IP: %s\n", ipPublic);
-  if(strcmp(ipLast, ipPublic) == 0)
+  if(!forceRun && strcmp(ipLast, ipPublic) == 0)
   {
     printf("Current Public IP hasn't changed (%s).\n", ipLast);
     return 0;
