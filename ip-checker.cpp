@@ -279,11 +279,12 @@ load(pathContacts);
     }
     string name = "", number = "";
     int count = 0;
+    const char * KEY_TEXTBELT = getenv("KEY_TEXTBELT");
     while(inFile >> name >> number)
     {      
       //Create Command
       char cmd[1024];
-      sprintf(cmd, "curl -X POST http://textbelt.com/text -d number=%s -d \"message=%s\"", number.c_str(), msg);
+      sprintf(cmd, "curl -X POST https://textbelt.com/text -d key=\"%s\" --data-urlencode phone=\"%s\" --data-urlencode message=\"%s\"", KEY_TEXTBELT, number.c_str(), msg);
 
       //Execute Command
       system(cmd);
