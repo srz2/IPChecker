@@ -10,6 +10,7 @@ using namespace std;
 #define PATH_DEFAULT "echo $HOME/.ip-check"
 #define FILE_LAST_IP ".lastip"
 #define FILE_CONTACT_LIST ".contacts"
+#define FILE_LAST_RUN ".lastrun"
 
 class Contact
 {
@@ -89,6 +90,7 @@ int main(int argc, char ** argv)
   char pathDefault[1024];
   char pathLastIP[1024];
   char pathContacts[1024];
+  char pathLastRun[1024];
 
   //Construct Program hidden directory
   in = popen(PATH_DEFAULT, "r");
@@ -120,6 +122,9 @@ int main(int argc, char ** argv)
   strcat(t_cmd, "touch ");
   strcat(t_cmd, pathContacts);
   system(t_cmd);
+
+  //Create last run path
+  sprintf(pathLastRun, "%s/%s", pathDefault, FILE_LAST_RUN);
 
   //Query and read in public IP Address
   in = popen("curl -s https://api.ipify.org | cat", "r");
@@ -251,6 +256,11 @@ load(pathContacts);
     printf("File is not found\n");
     return 3;
   }
+
+  //Output run date
+  char cmdDateOut[1024];
+  sprintf(cmdDateOut, "date > %s", pathLastRun);
+  system(cmdDateOut);
 
   // printf("Last IP:    %s\n", ipLast);
   // printf("Current IP: %s\n", ipPublic);
