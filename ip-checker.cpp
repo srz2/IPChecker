@@ -10,6 +10,7 @@ using namespace std;
 #define PATH_DEFAULT "echo $HOME/.ip-check"
 #define FILE_LAST_IP ".lastip"
 #define FILE_CONTACT_LIST ".contacts"
+#define FILE_LAST_RUN ".lastrun"
 
 class Contact
 {
@@ -82,6 +83,7 @@ int main(int argc, char ** argv)
 		cout << "List Contacts:  ip-check -l" << endl;
 		cout << "Add Contact:    ip-check -a [NAME] [NUMBER]" << endl;
 		cout << "Delete Contact: ip-check -d [NAME] " << endl;
+		cout << "Force Run:      ip-check -f" << endl;
 		return 0;
 	}
 
@@ -89,6 +91,9 @@ int main(int argc, char ** argv)
   char pathDefault[1024];
   char pathLastIP[1024];
   char pathContacts[1024];
+  char pathLastRun[1024];
+
+  bool forceRun = false;
 
   //Construct Program hidden directory
   in = popen(PATH_DEFAULT, "r");
@@ -120,6 +125,9 @@ int main(int argc, char ** argv)
   strcat(t_cmd, "touch ");
   strcat(t_cmd, pathContacts);
   system(t_cmd);
+
+  //Create last run path
+  sprintf(pathLastRun, "%s/%s", pathDefault, FILE_LAST_RUN);
 
   //Query and read in public IP Address
   in = popen("curl -s https://api.ipify.org | cat", "r");
@@ -201,7 +209,7 @@ load(pathContacts);
 	{
 		cout << arg_name << " Doesn't Exist!" << endl;
 	}
-	
+
 	return 0;
     }
    else if(strcmp(arg_cmd, "-l") == 0)
@@ -211,8 +219,13 @@ load(pathContacts);
 		Contact c = *it;
 		cout << c.toString() << endl;
 	}
-	return 0;	
+	return 0;
     }
+   else if(strcmp(arg_cmd, "-f") == 0)
+   {
+	forceRun = true;
+	cout << "Will force run" << endl;
+   }
    else if(strcmp(arg_cmd, "-r") == 0)
     {
 
@@ -252,9 +265,14 @@ load(pathContacts);
     return 3;
   }
 
+  //Output run date
+  char cmdDateOut[1024];
+  sprintf(cmdDateOut, "date > %s", pathLastRun);
+  system(cmdDateOut);
+
   // printf("Last IP:    %s\n", ipLast);
   // printf("Current IP: %s\n", ipPublic);
-  if(strcmp(ipLast, ipPublic) == 0)
+  if(!forceRun && strcmp(ipLast, ipPublic) == 0)
   {
     printf("Current Public IP hasn't changed (%s).\n", ipLast);
     return 0;
@@ -269,7 +287,7 @@ load(pathContacts);
     //Create Message
     char msg[256];
     sprintf(msg, "The server's IP has changed again. The new address is %s:32400/web/index.html", ipPublic);
-    
+
     //Extract and execute command for each contact
     ifstream inFile(pathContacts);
     if(!inFile)
@@ -279,11 +297,12 @@ load(pathContacts);
     }
     string name = "", number = "";
     int count = 0;
+    const char * KEY_TEXTBELT = getenv("KEY_TEXTBELT");
     while(inFile >> name >> number)
-    {      
+    {
       //Create Command
       char cmd[1024];
-      sprintf(cmd, "curl -X POST http://textbelt.com/text -d number=%s -d \"message=%s\"", number.c_str(), msg);
+      sprintf(cmd, "curl -X POST https://textbelt.com/text -d key=\"%s\" --data-urlencode phone=\"%s\" --data-urlencode message=\"%s\"", KEY_TEXTBELT, number.c_str(), msg);
 
       //Execute Command
       system(cmd);
