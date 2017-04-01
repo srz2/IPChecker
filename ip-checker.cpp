@@ -209,7 +209,7 @@ load(pathContacts);
 	{
 		cout << arg_name << " Doesn't Exist!" << endl;
 	}
-	
+
 	return 0;
     }
    else if(strcmp(arg_cmd, "-l") == 0)
@@ -219,7 +219,7 @@ load(pathContacts);
 		Contact c = *it;
 		cout << c.toString() << endl;
 	}
-	return 0;	
+	return 0;
     }
    else if(strcmp(arg_cmd, "-f") == 0)
    {
@@ -287,7 +287,7 @@ load(pathContacts);
     //Create Message
     char msg[256];
     sprintf(msg, "The server's IP has changed again. The new address is %s:32400/web/index.html", ipPublic);
-    
+
     //Extract and execute command for each contact
     ifstream inFile(pathContacts);
     if(!inFile)
@@ -299,7 +299,7 @@ load(pathContacts);
     int count = 0;
     const char * KEY_TEXTBELT = getenv("KEY_TEXTBELT");
     while(inFile >> name >> number)
-    {      
+    {
       //Create Command
       char cmd[1024];
       sprintf(cmd, "curl -X POST https://textbelt.com/text -d key=\"%s\" --data-urlencode phone=\"%s\" --data-urlencode message=\"%s\"", KEY_TEXTBELT, number.c_str(), msg);
